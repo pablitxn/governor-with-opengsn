@@ -1,0 +1,71 @@
+{
+  "env": {
+    "browser": true,
+    "es2021": true,
+    "jest": true,
+    "node": true
+  },
+  "extends": ["airbnb-typescript-prettier", "plugin:@next/next/recommended"],
+  "overrides": [
+    {
+      "files": [
+        "**/constants.ts",
+        "**/contexts/*.ts",
+        "**/hooks.ts",
+        "**/i18n.ts",
+        "**/utils.ts",
+        "**/utils/*.ts"
+      ],
+      "rules": {
+        "import/prefer-default-export": "off"
+      }
+    },
+    {
+      "files": ["./scripts/*.ts"],
+      "rules": {
+        "no-console": "off",
+        "import/no-extraneous-dependencies": "off"
+      }
+    },
+    {
+      "files": ["**/utils.ts", "**/utils/*.ts"],
+      "rules": {
+        "no-underscore-dangle": "off",
+        "import/prefer-default-export": "off"
+      }
+    }
+  ],
+  "rules": {
+    "@typescript-eslint/explicit-module-boundary-types": "off",
+    "@typescript-eslint/no-explicit-any": "off",
+    "arrow-body-style": "error",
+    "react/function-component-definition": "off",
+    "import/no-unresolved": "off",
+    "no-plusplus": "off",
+    "react/jsx-curly-brace-presence": ["error", "never"],
+    "react/jsx-fragments": "off",
+    "react/jsx-props-no-spreading": "off",
+    "react/no-danger": "off",
+    "react/react-in-jsx-scope": "off",
+    "react/require-default-props": "off",
+    "react/self-closing-comp": "error",
+    "prettier/prettier": [
+      "error",
+      {
+        "endOfLine": "auto"
+      }
+    ]
+  },
+  "settings": {
+    "import/resolver": {
+      "node": {
+        "extensions": [".ts", ".tsx"],
+        "paths": ["."]
+      }
+    },
+    "react": {
+      "version": "detect"
+    }
+  },
+  "parser": "@typescript-eslint/parser"
+}

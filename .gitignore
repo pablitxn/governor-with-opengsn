@@ -33,3 +33,16 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
+
+# Abis from contracts
+*/abis/*
+
+coverage
+coverage.json
+typechain
+
+#Hardhat files
+cache
+artifacts
+/contracts/
+typechain-types/
