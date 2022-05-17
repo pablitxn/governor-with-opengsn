@@ -33,10 +33,10 @@ const config: HardhatUserConfig = {
     },
   },
   paths: {
-    sources: './contracts',
+    sources: './src/contracts',
     tests: './test',
     cache: './cache',
-    artifacts: './abis',
+    artifacts: './src/abis',
   },
   mocha: {
     timeout: 20000,
