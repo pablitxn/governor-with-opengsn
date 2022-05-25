@@ -2,11 +2,13 @@ import '@nomiclabs/hardhat-etherscan';
 import '@nomiclabs/hardhat-waffle';
 import '@typechain/hardhat';
 import 'hardhat-gas-reporter';
-import 'dotenv/config';
+import { config as envConfig } from 'dotenv';
 import 'hardhat-deploy';
 import { HardhatUserConfig } from 'hardhat/config';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import 'solidity-coverage';
+
+envConfig({ path: '.env.local' });
 
 const rinkebyUrl = process.env.RINKEBY_URL || 'https://rinkeby.infura.io/v3/your-api-key';
 const accountPrivateKey = process.env.ACCOUNT_PRIVATE_KEY || 'privateKey';
@@ -14,10 +16,20 @@ const accountPrivateKey = process.env.ACCOUNT_PRIVATE_KEY || 'privateKey';
 const config: HardhatUserConfig = {
   defaultNetwork: 'hardhat',
   solidity: {
-    version: '0.8.9',
-    settings: {
-      optimizer: { enabled: true, runs: 200 },
-    },
+    compilers: [
+      {
+        version: '0.7.6',
+        settings: {
+          optimizer: { enabled: true, runs: 200 },
+        },
+      },
+      {
+        version: '0.8.0',
+        settings: {
+          optimizer: { enabled: true, runs: 200 },
+        },
+      },
+    ],
   },
   networks: {
     hardhat: {},

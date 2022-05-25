@@ -1,18 +1,25 @@
-// SPDX-License-Identifier: MIT
-// File: @opengsn/contracts/src/utils/GsnEip712Library.sol
-pragma solidity >=0.7.6;
+// SPDX-License-Identifier: GPL-3.0-only
+pragma solidity ^0.8.0;
+pragma abicoder v2;
+
+import "../utils/GsnTypes.sol";
+import "../interfaces/IERC2771Recipient.sol";
+import "../forwarder/IForwarder.sol";
+
+import "./GsnUtils.sol";
 
 /**
- * Bridge Library to map GSN RelayRequest into a call of a Forwarder
+ * @title The ERC-712 Library for GSN
+ * @notice Bridge Library to convert a GSN RelayRequest into a valid `ForwardRequest` for a `Forwarder`.
  */
 library GsnEip712Library {
     // maximum length of return value/revert reason for 'execute' method. Will truncate result if exceeded.
     uint256 private constant MAX_RETURN_SIZE = 1024;
 
     //copied from Forwarder (can't reference string constants even from another library)
-    string public constant GENERIC_PARAMS = "address from,address to,uint256 value,uint256 gas,uint256 nonce,bytes data,uint256 validUntil";
+    string public constant GENERIC_PARAMS = "address from,address to,uint256 value,uint256 gas,uint256 nonce,bytes data,uint256 validUntilTime";
 
-    bytes public constant RELAYDATA_TYPE = "RelayData(uint256 gasPrice,uint256 pctRelayFee,uint256 baseRelayFee,address relayWorker,address paymaster,address forwarder,bytes paymasterData,uint256 clientId)";
+    bytes public constant RELAYDATA_TYPE = "RelayData(uint256 maxFeePerGas,uint256 maxPriorityFeePerGas,uint256 pctRelayFee,uint256 baseRelayFee,uint256 transactionCalldataGasUsed,address relayWorker,address paymaster,address forwarder,bytes paymasterData,uint256 clientId)";
 
     string public constant RELAY_REQUEST_NAME = "RelayRequest";
     string public constant RELAY_REQUEST_SUFFIX = string(abi.encodePacked("RelayData relayData)", RELAYDATA_TYPE));
@@ -52,7 +59,7 @@ library GsnEip712Library {
     function verifyForwarderTrusted(GsnTypes.RelayRequest calldata relayRequest) internal view {
         (bool success, bytes memory ret) = relayRequest.request.to.staticcall(
             abi.encodeWithSelector(
-                IRelayRecipient.isTrustedForwarder.selector, relayRequest.relayData.forwarder
+                IERC2771Recipient.isTrustedForwarder.selector, relayRequest.relayData.forwarder
             )
         );
         require(success, "isTrustedForwarder: reverted");
@@ -95,16 +102,16 @@ library GsnEip712Library {
         MinLibBytes.truncateInPlace(data, MAX_RETURN_SIZE);
     }
 
-    function domainSeparator(address forwarder) internal pure returns (bytes32) {
+    function domainSeparator(address forwarder) internal view returns (bytes32) {
         return hashDomain(EIP712Domain({
             name : "GSN Relayed Transaction",
-            version : "2",
+            version : "3",
             chainId : getChainID(),
             verifyingContract : forwarder
             }));
     }
 
-    function getChainID() internal pure returns (uint256 id) {
+    function getChainID() internal view returns (uint256 id) {
         /* solhint-disable no-inline-assembly */
         assembly {
             id := chainid()
@@ -123,9 +130,11 @@ library GsnEip712Library {
     function hashRelayData(GsnTypes.RelayData calldata req) internal pure returns (bytes32) {
         return keccak256(abi.encode(
                 RELAYDATA_TYPEHASH,
-                req.gasPrice,
+                req.maxFeePerGas,
+                req.maxPriorityFeePerGas,
                 req.pctRelayFee,
                 req.baseRelayFee,
+                req.transactionCalldataGasUsed,
                 req.relayWorker,
                 req.paymaster,
                 req.forwarder,
