@@ -548,7 +548,8 @@ contract RelayHub is IRelayHub, Ownable, ERC165 {
         if (relayData.maxFeePerGas == relayData.maxPriorityFeePerGas) {
             basefee = 0;
         } else {
-            basefee = block.basefee;
+            basefee = 0; // todo: debug me
+            // basefee = block.basefee;
         }
         uint256 chargeableGasPrice = Math.min(relayData.maxFeePerGas, Math.min(tx.gasprice, basefee + relayData.maxPriorityFeePerGas));
         return relayData.baseRelayFee + (gasUsed * chargeableGasPrice * (relayData.pctRelayFee + 100)) / 100;

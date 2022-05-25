@@ -1,38 +1,65 @@
-// We require the Hardhat Runtime Environment explicitly here. This is optional
-// but useful for running the script in a standalone fashion through `node <script>`.
-//
-// When running the script with `npx hardhat run <script>` you'll find the Hardhat
-// Runtime Environment's members available in the global scope.
-import hre from 'hardhat';
 import { ethers } from 'hardhat';
 
 async function main() {
-  // Hardhat always runs the compile task when running scripts with its command
-  // line interface.
-  //
-  // If this script is run directly using `node` you may want to call compile
-  // manually to make sure everything is compiled
-  // await hre.run('compile');
+  // Stake Manager
+  const StakeManager = await ethers.getContractFactory('StakeManager');
+  const stakeManagerContract = await StakeManager.deploy(
+    30000,
+    0,
+    0,
+    '0x0000000000000000000000000000000000000001',
+    '0x0000000000000000000000000000000000000001',
+  );
+  await stakeManagerContract.deployed();
+  console.log('StakeManager deployed at: ', stakeManagerContract.address);
 
-  // Contracts from logs of gns
-  // const RelayHub = await ethers.getContractFactory('RelayHub');
-  // const StakeManager = await ethers.getContractFactory('StakeManager');
-  // const Penalizer = await ethers.getContractFactory('Penalizer');
-  // const Forwarder = await ethers.getContractFactory('Forwarder');
-  // const Paymaster = await ethers.getContractFactory('BasePaymaster');
-  // const VersionRegistry = await ethers.getContractFactory('VersionRegistry');
-  // const TestPaymasterEverythingAccepted = await ethers.getContractFactory(
-  //   'TestPaymasterEverythingAccepted',
-  // );
+  // Penalizer
+  const Penalizer = await ethers.getContractFactory('Penalizer');
+  const penalizerContract = await Penalizer.deploy(0, 0);
+  await penalizerContract.deployed();
+  console.log('Penalizer deployed at: ', penalizerContract.address);
 
-  const SingleRecipientPaymaster = await ethers.getContractFactory("SingleRecipientPaymaster");
+  // RelayHub
+  const RelayHub = await ethers.getContractFactory('RelayHub');
+  const relayHubContract = await RelayHub.deploy(
+    stakeManagerContract.address,
+    penalizerContract.address,
+    '0x0000000000000000000000000000000000000000',
+    '0x0000000000000000000000000000000000000000',
+    {
+      maxWorkerCount: 0,
+      gasReserve: 0,
+      postOverhead: 0,
+      gasOverhead: 0,
+      // maximumRecipientDeposit: 0,
+      minimumUnstakeDelay: 0,
+      devAddress: '0x0000000000000000000000000000000000000000',
+      devFee: 0,
+      // minimumStake: 0,
+      // dataGasCostPerByte: 0,
+      // externalCallDataCostOverhead: 0,
+    },
+  );
+  await relayHubContract.deployed();
+  console.log('RelayHub deployed at: ', relayHubContract.address);
 
-  // Found Paymaster
-  // Found Relayer
-  // Found Stake Manager
+  // Forwarder
+  const Forwarder = await ethers.getContractFactory('Forwarder');
+  const forwarderContract = await Forwarder.deploy();
+  await forwarderContract.deployed();
+  console.log('Forwarder deployed at', forwarderContract.address);
 
+  // SingleRecipentPaymaster
+  const SingleRecipientPaymaster = await ethers.getContractFactory('SingleRecipientPaymaster');
+  const singleRecipientPaymasterContract = await SingleRecipientPaymaster.deploy(
+    forwarderContract.address,
+  );
+  await singleRecipientPaymasterContract.deployed();
+  console.log('SingleRecipientPaymaster deployed at', singleRecipientPaymasterContract.address);
+
+  // APP -> Counter
   const Counter = await ethers.getContractFactory('Counter');
-  const counterContract = await Counter.deploy(0);
+  const counterContract = await Counter.deploy(forwarderContract.address, 0);
   await counterContract.deployed();
   console.log('Counter app deployed to:', counterContract.address);
 }

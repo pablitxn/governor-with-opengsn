@@ -17,7 +17,7 @@
     "typeRoots": ["./src/typing"],
     "incremental": true
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "./scripts"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "./scripts/**.ts"],
   "exclude": ["node_modules"],
   "files": ["./hardhat.config.ts"]
 }
