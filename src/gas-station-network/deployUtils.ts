@@ -1,6 +1,5 @@
 import * as util from 'util'
 import path from 'path'
-import fs from 'fs'
 import { defaultEnvironment, DeploymentConfiguration, Environment, getEnvironment, merge } from '../gas-station-network/environments'
 import { ethers } from 'hardhat'
 import { DeploymentsExtension, TxOptions } from 'hardhat-deploy/types'
@@ -26,10 +25,6 @@ export function getMergedEnvironment (chainId: number, defaultDevAddress: string
     }
     console.log('loading env ( based on chainId', chainId, ')', env.name)
     let config: any
-    if (fs.existsSync(deploymentConfigFile)) {
-      const fileConfig = require(deploymentConfigFile) as DeploymentConfig
-      config = fileConfig[chainId]
-    }
     if (config == null) {
       printSampleEnvironment(defaultDevAddress, chainId)
       process.exit(1)

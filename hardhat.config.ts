@@ -25,6 +25,12 @@ const config: HardhatUserConfig = {
         },
       },
       {
+        version: '0.8.7',
+        settings: {
+          optimizer: { enabled: true, runs: 200 },
+        },
+      },
+      {
         version: '0.8.1',
         settings: {
           optimizer: { enabled: true, runs: 200 },
@@ -42,6 +48,15 @@ const config: HardhatUserConfig = {
       url: 'http://127.0.0.1:7545',
       chainId: 1337,
       accounts: [accountPrivateKey],
+    },
+  },
+  namedAccounts: {
+    deployer: { default: 0 },
+    metamask: "0xb95Dbde8F8BB5d807Da6cDB8Ba8A2C7106068B12",
+
+    //official addresses from https://docs.opengsn.org/networks
+    forwarder: {
+      4: "0x2E595b954337f11795384df653A39dcCC4785CdC",
     },
   },
   paths: {

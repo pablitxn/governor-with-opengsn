@@ -1,9 +1,13 @@
 import type { NextPage } from 'next';
+import { useState } from 'react';
 import { Flex, Heading } from '@chakra-ui/react';
 import WalletConnector from 'components/wallet-connector';
 import Counter from 'components/counter';
+import useCounter from '../hooks/useCounter';
 
 const Home: NextPage = () => {
+  const { onIncrementByRelay } = useCounter();
+
   return (
     <Flex p="2rem 20rem" flexDir="column">
       <WalletConnector />
@@ -17,7 +21,7 @@ const Home: NextPage = () => {
       >
         meta-tx using EIP 2771
       </Heading>
-      <Counter />
+      <Counter onIncrement={onIncrementByRelay}/>
     </Flex>
   );
 };
