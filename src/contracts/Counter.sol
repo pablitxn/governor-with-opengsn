@@ -1,7 +1,7 @@
-// SPDX-License-Identifier: MIT OR Apache-2.0
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./gsn/ERC2771Recipient.sol";
+import "./gas-station-network/ERC2771Recipient.sol";
 
 contract Counter is ERC2771Recipient  {
     event Increment(

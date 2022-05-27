@@ -4,7 +4,7 @@ pragma abicoder v2;
 
 import "../utils/GsnTypes.sol";
 import "../interfaces/IERC2771Recipient.sol";
-import "../forwarder/IForwarder.sol";
+import "../interfaces/IForwarder.sol";
 
 import "./GsnUtils.sol";
 

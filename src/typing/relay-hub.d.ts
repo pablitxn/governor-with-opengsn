@@ -1,4 +1,4 @@
-export interface RelayHubConfiguration {
+interface RelayHubConfiguration {
   maxWorkerCount: number | BN
   gasReserve: number | BN
   postOverhead: number | BN

@@ -1,5 +1,4 @@
 import type { NextPage } from 'next';
-import { useState } from 'react';
 import { Flex, Heading } from '@chakra-ui/react';
 import WalletConnector from 'components/wallet-connector';
 import Counter from 'components/counter';

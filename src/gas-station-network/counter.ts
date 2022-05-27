@@ -1,32 +1,22 @@
-import { networks } from '../utils/networks';
+import { networks } from './networks';
 import { GSNConfig, GsnEvent, RelayProvider } from '@opengsn/provider';
-import { ethers, EventFilter, Signer, providers } from 'ethers';
+import { ethers, EventFilter, Signer } from 'ethers';
 import CounterArtifact from '../abis/src/contracts/Counter.sol/Counter.json';
 
 declare let window: { ethereum: any; location: any };
 declare let global: { network: any };
 
-export interface EventInfo {
-  date?: Date;
-  previousHolder: string;
-  currentHolder: string;
-}
-
-export interface GsnStatusInfo {
-  getActiveRelayers: () => Promise<number>;
-  getPaymasterBalance: () => Promise<string>;
-  relayHubAddress: string;
-  paymasterAddress: string;
-  forwarderAddress: string;
-}
-
-const counterHandler = (address: string, signer: Signer, gsnProvider: RelayProvider) => {
+const CounterContractHanlder = (address: string, signer: Signer, gsnProvider: RelayProvider) => {
   const blockDates: { [key: number]: Date } = {};
   const ethersProvider = signer.provider!;
   const theContract = new ethers.Contract(address, CounterArtifact.abi, signer);
 
   const onIncrement = async (step: number): Promise<void> => {
     return await theContract.increment(step);
+  };
+
+  const onDecrement = async (step: number): Promise<void> => {
+    return await theContract.decrement(step);
   };
 
   const getEventInfo = async (e: ethers.Event): Promise<EventInfo> => {
@@ -75,7 +65,6 @@ const counterHandler = (address: string, signer: Signer, gsnProvider: RelayProvi
 
   const getPastEvents = async (count = 5) => {
     const currentBlock = (await ethersProvider.getBlockNumber()) - 1;
-    //look at most one month back (in 12-second block)
     const lookupWindow = global.network?.pastEventsQueryMaxPageSize || (30 * 24 * 3600) / 12;
     const startBlock = Math.max(1, currentBlock - lookupWindow);
 
@@ -84,9 +73,7 @@ const counterHandler = (address: string, signer: Signer, gsnProvider: RelayProvi
     return lastLogs;
   };
 
-  const getSigner = () => {
-    return theContract.signer.getAddress();
-  };
+  const getSigner = () => theContract.signer.getAddress();
 
   const getGsnStatus = async (): Promise<GsnStatusInfo> => {
     let relayClient = gsnProvider.relayClient;
@@ -105,24 +92,20 @@ const counterHandler = (address: string, signer: Signer, gsnProvider: RelayProvi
     };
   };
 
-  console.log(gsnProvider)
-
   return {
     onIncrement,
+    onDecrement,
     listenToEvents,
     stopListenToEvents,
     getPastEvents,
     getSigner,
     getGsnStatus,
+    address: theContract.address,
   };
 };
 
 const initCounter = async () => {
-  let web3Provider: any;
-  if (typeof window !== 'undefined') {
-    web3Provider = window.ethereum;
-  }
-
+  const web3Provider = window.ethereum;
   if (!web3Provider) throw new Error('No "window.ethereum" found. do you have Metamask installed?');
 
   web3Provider.on('chainChanged', (chainId: number) => {
@@ -140,41 +123,14 @@ const initCounter = async () => {
   const net = (global.network = networks[chainId]);
   const netid: any = await provider.send('net_version', []);
 
-  // console.log('chainid=', chainId, 'networkid=', netid);
-  if (chainId !== parseInt(netid))
-    console.warn(
-      `Incompatible network-id ${netid} and ${chainId}: for Metamask to work, they should be the same`,
-    );
-  if (!net || !net.paymaster) {
-    //ganache/hardnat network
-    if (!chainId.toString().match(/1337/) || !window.location.href.match(/localhost|127.0.0.1/))
-      throw new Error(
-        `Unsupported network (chainId=${chainId}) . please switch to one of: ` +
-          Object.values(networks)
-            .map((n: any) => n.name)
-            .filter((n) => n)
-            .join(' / '),
-      );
-    else
-      throw new Error(
-        'To run locally, you must run "yarn evm" and then "yarn deploy" before "yarn react-start" ',
-      );
-  }
-
-  //on kotti (at least) using blockGasLimit breaks our code..
-  const maxViewableGasLimit = chainId === 6 ? 5e6 : undefined;
+  console.log('chainid=', chainId, 'networkid=', netid);
 
   const gsnConfig: Partial<GSNConfig> = {
-    maxViewableGasLimit,
-    relayLookupWindowBlocks: global.network.relayLookupWindowBlocks || 600000,
-    relayRegistrationLookupBlocks: global.network.relayRegistrationLookupBlocks || 600000,
-    loggerConfiguration: { logLevel: 'debug' },
-    pastEventsQueryMaxPageSize:
-      global.network.pastEventsQueryMaxPageSize || Number.MAX_SAFE_INTEGER,
     paymasterAddress: net.paymaster,
+    loggerConfiguration: {
+      logLevel: 'debug',
+    },
   };
-
-  // console.log('== gsnconfig=', gsnConfig);
 
   const gsnProvider = RelayProvider.newProvider({
     provider: web3Provider,
@@ -182,13 +138,11 @@ const initCounter = async () => {
   });
 
   await gsnProvider.init();
-  const provider2 = new ethers.providers.Web3Provider(
-    gsnProvider as any as providers.ExternalProvider,
-  );
-
+  // @ts-ignore
+  const provider2 = new ethers.providers.Web3Provider(gsnProvider);
   const signer = provider2.getSigner();
 
-  return counterHandler(net.counter, signer, gsnProvider);
+  return CounterContractHanlder(net.counter, signer, gsnProvider);
 };
 
-export { counterHandler, initCounter };
+export { initCounter };

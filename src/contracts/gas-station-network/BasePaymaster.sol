@@ -6,11 +6,11 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 
-import "./utils/GsnTypes.sol";
 import "./interfaces/IPaymaster.sol";
 import "./interfaces/IRelayHub.sol";
+import "./interfaces/IForwarder.sol";
 import "./utils/GsnEip712Library.sol";
-import "./forwarder/IForwarder.sol";
+import "./utils/GsnTypes.sol";
 
 /**
  * @notice An abstract base class to be inherited by a concrete Paymaster.

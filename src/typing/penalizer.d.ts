@@ -1,4 +1,4 @@
-export interface PenalizerConfiguration {
+interface PenalizerConfiguration {
   penalizeBlockDelay: number
   penalizeBlockExpiration: number
 }

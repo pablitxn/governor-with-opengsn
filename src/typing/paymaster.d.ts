@@ -1,4 +1,4 @@
-export interface PaymasterConfiguration {
+interface PaymasterConfiguration {
   forwarderHubOverhead: number
   preRelayedCallGasLimit: number
   postRelayedCallGasLimit: number

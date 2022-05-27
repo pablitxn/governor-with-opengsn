@@ -14,6 +14,7 @@ try {
   localnetwork = {
     name: 'local',
     paymaster: '0xcf4Fff6DBDAeD3Db545b28cc8702020000B4DBf2',
+    // @ts-ignore
     counter: require('../abis/src/contracts/Counter.sol/Counter.json').address,
   };
 } catch (e) {
@@ -28,7 +29,7 @@ export const networks: { [chain: number]: NetworkType } = {
     pastEventsQueryMaxPageSize: 2e4,
     relayLookupWindowBlocks: 1e5,
     relayRegistrationLookupBlocks: 1e5,
-    counter: '0x562bCbCcDCD8a2784bB22016A2d86C8e6fB84156',
+    counter: '0x5BD6276e2453f63b160533618eFFaaF03aAd68D1',
   },
   1337: localnetwork,
 };
