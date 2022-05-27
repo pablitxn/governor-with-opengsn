@@ -5,7 +5,7 @@ import Counter from 'components/counter';
 import useCounter from '../hooks/useCounter';
 
 const Home: NextPage = () => {
-  const { onIncrementByRelay } = useCounter();
+  const { onIncrement, onDecrement, value } = useCounter();
 
   return (
     <Flex p="2rem 20rem" flexDir="column">
@@ -20,7 +20,7 @@ const Home: NextPage = () => {
       >
         meta-tx using EIP 2771
       </Heading>
-      <Counter onIncrement={onIncrementByRelay}/>
+      <Counter onIncrement={onIncrement} onDecrement={onDecrement} value={value} />
     </Flex>
   );
 };

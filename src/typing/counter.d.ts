@@ -1,11 +1,5 @@
 interface CounterState {
-  error?: string;
-  current?: string;
-  contractAddress?: string;
-  account?: string;
+  currentValue?: number;
   events?: any[];
-
   status?: string;
-  step?: number;
-  total?: number;
 }

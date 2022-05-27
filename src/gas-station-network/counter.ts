@@ -92,6 +92,12 @@ const CounterContractHanlder = (address: string, signer: Signer, gsnProvider: Re
     };
   };
 
+  const getCurrentValue = async () => {
+    const currentValue = await theContract.value();
+    const value = currentValue.toNumber();
+    return value;
+  };
+
   return {
     onIncrement,
     onDecrement,
@@ -100,6 +106,7 @@ const CounterContractHanlder = (address: string, signer: Signer, gsnProvider: Re
     getPastEvents,
     getSigner,
     getGsnStatus,
+    getCurrentValue,
     address: theContract.address,
   };
 };
