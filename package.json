@@ -1,10 +1,10 @@
 {
-  "name": "counter-with-gsn-and-meta-tx",
+  "name": "counter-with-opengsn",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build && next export",
     "start": "next start",
     "lint": "next lint",
     "rm-abis": "rm -rf cache typechain-types src/abis/*"
