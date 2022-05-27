@@ -11,7 +11,9 @@ import { HardhatUserConfig } from 'hardhat/config';
 envConfig({ path: '.env.local' });
 
 const rinkebyUrl = process.env.RINKEBY_URL || 'https://rinkeby.infura.io/v3/your-api-key';
-const accountPrivateKey = process.env.ACCOUNT_PRIVATE_KEY || 'privateKey';
+const accountPrivateKey =
+  process.env.ACCOUNT_PRIVATE_KEY ||
+  'e44db4d933460c2d0655a8834d987658cff294d74307029aa9f433dd1a3df270';
 const etherscanApiKey = process.env.ETHERSCAN_API_KEY || 'your-api-key';
 
 const config: HardhatUserConfig = {
