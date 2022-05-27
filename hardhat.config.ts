@@ -1,4 +1,4 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
+/* eslint-disable import/no-extraneous-dependencies */
 import 'solidity-coverage';
 import '@nomiclabs/hardhat-etherscan';
 import '@nomiclabs/hardhat-waffle';
@@ -52,11 +52,10 @@ const config: HardhatUserConfig = {
   },
   namedAccounts: {
     deployer: { default: 0 },
-    metamask: "0xb95Dbde8F8BB5d807Da6cDB8Ba8A2C7106068B12",
-
+    metamask: '0xb95Dbde8F8BB5d807Da6cDB8Ba8A2C7106068B12',
     //official addresses from https://docs.opengsn.org/networks
     forwarder: {
-      4: "0x2E595b954337f11795384df653A39dcCC4785CdC",
+      4: '0x2E595b954337f11795384df653A39dcCC4785CdC',
     },
   },
   paths: {

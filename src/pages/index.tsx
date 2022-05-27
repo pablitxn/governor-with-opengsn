@@ -2,7 +2,7 @@ import type { NextPage } from 'next';
 import { Flex, Heading } from '@chakra-ui/react';
 import WalletConnector from 'components/wallet-connector';
 import Counter from 'components/counter';
-import useCounter from '../hooks/useCounter';
+import useCounter from 'hooks/useCounter';
 
 const Home: NextPage = () => {
   const { onIncrement, onDecrement, value } = useCounter();

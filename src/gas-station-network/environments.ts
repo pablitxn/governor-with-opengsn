@@ -15,12 +15,10 @@ const defaultRelayHubConfiguration: RelayHubConfiguration = {
   gasReserve: 100000,
   maxWorkerCount: 10,
   minimumUnstakeDelay: 15000,
-  // devAddress: '0xeFEfeFEfeFeFEFEFEfefeFeFefEfEfEfeFEFEFEf',
   devAddress: '0xb95Dbde8F8BB5d807Da6cDB8Ba8A2C7106068B12', // rinkeby address
   devFee: 0,
 };
 
-// TODO add as constructor params to paymaster instead of constants
 const preRelayedCallGasLimit = 1e5;
 const forwarderHubOverhead = 5e4;
 const defaultPaymasterConfiguration: PaymasterConfiguration = {
@@ -62,8 +60,6 @@ const rinkebyTestnet: Environment = {
   getGasPriceFactor: 1,
   nonZeroDevFeeGasOverhead: 5596,
 };
-
-/* end Arbitrum-specific Environment */
 
 export enum EnvironmentsKeys {
   ganacheLocal = 'ganacheLocal',

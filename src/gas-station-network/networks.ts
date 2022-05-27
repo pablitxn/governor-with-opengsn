@@ -10,7 +10,7 @@ interface NetworkType {
 
 let localnetwork: NetworkType = {} as any;
 try {
-  // console.log('==reading localnet dir=', __dirname);
+  console.log('==reading localnet dir=', __dirname);
   localnetwork = {
     name: 'local',
     paymaster: '0xcf4Fff6DBDAeD3Db545b28cc8702020000B4DBf2',

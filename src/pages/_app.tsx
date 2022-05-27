@@ -3,13 +3,11 @@ import type { AppProps } from 'next/app';
 import Head from 'next/head';
 import dynamic from 'next/dynamic';
 import { GlobalContext } from 'contexts/global';
-import useDapp from 'hooks/useDapp';
+// import useDapp from 'hooks/useDapp';
 
 function MyApp({ Component, pageProps }: AppProps) {
   // const { dappState } = useDapp();
   const dappState: any = {};
-
-  // console.log(dappState);
 
   return (
     <ChakraProvider>

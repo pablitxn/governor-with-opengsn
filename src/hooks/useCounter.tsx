@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { initCounter } from '../gas-station-network/counter';
+import { initCounter } from 'gas-station-network/counter';
 
 const prependEvents = (currentEvents: any[] | undefined, newEvents: any[]) => {
   return [...(newEvents ?? []).reverse(), ...(currentEvents ?? [])].slice(0, 5);
