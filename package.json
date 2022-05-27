@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "npm run rm-types && npx hardhat compile && npm run next-build",
+    "build": "npm run rm-abis && npx hardhat compile && npm run next-build",
     "next-build": "next build && next export",
     "start": "next start",
     "lint": "next lint",
