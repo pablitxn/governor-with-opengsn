@@ -1,7 +1,9 @@
 import type { NextPage } from 'next';
-import { Flex, Heading } from '@chakra-ui/react';
+import { Flex, HStack,Heading } from '@chakra-ui/react';
 import WalletConnector from 'components/wallet-connector';
 import Counter from 'components/counter';
+// import GsnStatus from 'components/gsn-status';
+// import GsnInfo from 'components/gsn-info';
 import useCounter from 'hooks/useCounter';
 
 const Home: NextPage = () => {
@@ -9,7 +11,10 @@ const Home: NextPage = () => {
 
   return (
     <Flex p="2rem 20rem" flexDir="column">
-      <WalletConnector />
+      <HStack>
+        {/* <GsnInfo /> */}
+        <WalletConnector />
+      </HStack>
       <Heading
         as="h2"
         fontSize="2.25rem"
@@ -21,6 +26,7 @@ const Home: NextPage = () => {
         meta-tx using EIP 2771
       </Heading>
       <Counter onIncrement={onIncrement} onDecrement={onDecrement} value={value} />
+      {/* <GsnStatus /> */}
     </Flex>
   );
 };

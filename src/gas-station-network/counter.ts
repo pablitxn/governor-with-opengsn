@@ -3,7 +3,6 @@ import { GSNConfig, GsnEvent, RelayProvider } from '@opengsn/provider';
 import { ethers, EventFilter, Signer } from 'ethers';
 import CounterArtifact from '../abis/src/contracts/Counter.sol/Counter.json';
 
-declare let window: { ethereum: any; location: any };
 declare let global: { network: any };
 
 const CounterContractHanlder = (address: string, signer: Signer, gsnProvider: RelayProvider) => {
@@ -35,7 +34,7 @@ const CounterContractHanlder = (address: string, signer: Signer, gsnProvider: Re
 
   const listenToEvents = (onEvent: (e: EventInfo) => void, onProgress?: (e: GsnEvent) => void) => {
     // @ts-ignore
-    let listener = async (from, to, event) => {
+    const listener = async (from, to, event) => {
       const info = await getEventInfo(event);
       onEvent(info);
     };
@@ -76,7 +75,7 @@ const CounterContractHanlder = (address: string, signer: Signer, gsnProvider: Re
   const getSigner = () => theContract.signer.getAddress();
 
   const getGsnStatus = async (): Promise<GsnStatusInfo> => {
-    let relayClient = gsnProvider.relayClient;
+    const relayClient = gsnProvider.relayClient;
     const ci = relayClient.dependencies.contractInteractor as any;
 
     return {
@@ -111,45 +110,28 @@ const CounterContractHanlder = (address: string, signer: Signer, gsnProvider: Re
   };
 };
 
-const initCounter = async () => {
-  const web3Provider = window.ethereum;
-  if (!web3Provider) throw new Error('No "window.ethereum" found. do you have Metamask installed?');
-
-  web3Provider.on('chainChanged', (chainId: number) => {
-    console.log('chainChanged', chainId);
-    window.location.reload();
-  });
-  web3Provider.on('accountsChanged', (accs: any[]) => {
-    console.log('accountChanged', accs);
-    window.location.reload();
-  });
-
-  const provider = new ethers.providers.Web3Provider(web3Provider);
-  const network = await provider.getNetwork();
-  const chainId = network.chainId;
-  const net = (global.network = networks[chainId]);
-  const netid: any = await provider.send('net_version', []);
-
-  console.log('chainid=', chainId, 'networkid=', netid);
+const initCounter = async (ctx: any) => {
+  const { chainId, connection } = ctx;
+  const { paymasterAddress, counterAddress } = networks[chainId];
 
   const gsnConfig: Partial<GSNConfig> = {
-    paymasterAddress: net.paymaster,
+    paymasterAddress,
     loggerConfiguration: {
       logLevel: 'debug',
     },
   };
 
   const gsnProvider = RelayProvider.newProvider({
-    provider: web3Provider,
+    provider: connection,
     config: gsnConfig,
   });
 
   await gsnProvider.init();
   // @ts-ignore
-  const provider2 = new ethers.providers.Web3Provider(gsnProvider);
-  const signer = provider2.getSigner();
+  const provider = new ethers.providers.Web3Provider(gsnProvider);
+  const signer = provider.getSigner();
 
-  return CounterContractHanlder(net.counter, signer, gsnProvider);
+  return CounterContractHanlder(counterAddress, signer, gsnProvider);
 };
 
 export { initCounter };

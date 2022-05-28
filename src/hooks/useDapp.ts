@@ -11,11 +11,25 @@ const useDapp = () => {
       try {
         const web3Modal = new Web3Modal();
         const connection = await web3Modal.connect();
+        if (!connection)
+          throw new Error('No "window.ethereum" found. do you have Metamask installed?');
+
         const provider = new ethers.providers.Web3Provider(connection);
+        const network = await provider.getNetwork();
         const signer = provider.getSigner();
         const account = await signer.getAddress();
+        const chainId = network.chainId;
 
-        setDappState({ provider, signer, account, ethers });
+        connection.on('chainChanged', (chainId: number) => {
+          console.log('chainChanged', chainId);
+          window.location.reload();
+        });
+        connection.on('accountsChanged', (accs: any[]) => {
+          console.log('accountChanged', accs);
+          window.location.reload();
+        });
+
+        setDappState({ provider, signer, account, ethers, connection, network, chainId });
       } catch (err) {
         setError(err);
       }
