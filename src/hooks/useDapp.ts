@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 import Web3Modal from 'web3modal';
+import { initCounter } from 'gas-station-network/counter';
 
 const useDapp = () => {
   const [dappState, setDappState] = useState<IGlobalContext>(null);
@@ -29,7 +30,18 @@ const useDapp = () => {
           window.location.reload();
         });
 
-        setDappState({ provider, signer, account, ethers, connection, network, chainId });
+        const counterContract = await initCounter(chainId, connection);
+
+        setDappState({
+          provider,
+          signer,
+          account,
+          ethers,
+          connection,
+          network,
+          chainId,
+          counterContract,
+        });
       } catch (err) {
         setError(err);
       }

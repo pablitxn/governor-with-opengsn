@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState, useContext } from 'react';
+import { ethers } from 'ethers';
 import { GlobalContext } from 'contexts/global';
-import { initCounter } from 'gas-station-network/counter';
 
 const prependEvents = (currentEvents: any[] | undefined, newEvents: any[]) => {
   return [...(newEvents ?? []).reverse(), ...(currentEvents ?? [])].slice(0, 5);
@@ -12,21 +12,15 @@ const sleep = async (ms: number) => {
 
 const useCounter = () => {
   const ctx = useContext(GlobalContext);
-  const [counterContract, setCounterContract] = useState<any>();
   const [state, setState] = useState<CounterState | null>(null);
 
   const onEvent = (event: any) => log(event);
 
   const onProgress = ({ event }: any) => progress({ event });
 
-  const getCounterContract = useCallback(async () => {
-    const counterContract = await initCounter(ctx);
-    setCounterContract(counterContract);
-  }, [setCounterContract, ctx]);
-
   const getContractState = useCallback(async () => {
-    const currentValue = await counterContract?.getCurrentValue();
-    const events = await counterContract?.getPastEvents();
+    const currentValue = await ctx?.counterContract.getCurrentValue();
+    const events = await ctx?.counterContract.getPastEvents() as ethers.Event[];
 
     setState({
       currentValue,
@@ -34,9 +28,9 @@ const useCounter = () => {
     });
 
     return { currentValue, events };
-  }, [state, setState, counterContract]);
+  }, [state, setState, ctx?.counterContract]);
 
-  const gasProvider = counterContract?.gsnProvider;
+  const gasProvider = ctx?.counterContract.gsnProvider;
 
   const log = (event: any) =>
     setState((prev) => ({ ...prev, events: prependEvents(prev?.events, [event]) }));
@@ -56,7 +50,7 @@ const useCounter = () => {
 
   const onIncrement = async () => {
     setState((prev) => ({ ...prev, status: 'sending' }));
-    const response = await counterContract?.onIncrement(1);
+    const response = await ctx?.counterContract.onIncrement(1);
 
     setState((prev) => ({
       ...prev,
@@ -75,7 +69,7 @@ const useCounter = () => {
 
   const onDecrement = async () => {
     setState((prev) => ({ ...prev, status: 'sending' }));
-    const response = await counterContract?.onDecrement(1);
+    const response = await ctx?.counterContract.onDecrement(1);
 
     setState((prev) => ({
       ...prev,
@@ -93,21 +87,13 @@ const useCounter = () => {
   };
 
   useEffect(() => {
-    (async () => {
-      if (typeof window !== 'undefined' && ctx) {
-        await getCounterContract();
-      }
-    })();
-  }, [window, ctx]);
-
-  useEffect(() => {
-    if (counterContract) {
+    if (ctx?.counterContract) {
       (async () => {
         await getContractState();
-        counterContract?.listenToEvents(onEvent, onProgress);
+        ctx?.counterContract.listenToEvents(onEvent, onProgress);
       })();
     }
-  }, [counterContract]);
+  }, [ctx?.counterContract]);
 
   useEffect(() => {
     if (state?.status === 'done') {

@@ -8,6 +8,8 @@ import useDapp from 'hooks/useDapp';
 function MyApp({ Component, pageProps }: AppProps) {
   const { dappState } = useDapp();
 
+  if(!dappState) return <>loading...</>
+
   return (
     <ChakraProvider>
       <GlobalContext.Provider value={dappState}>

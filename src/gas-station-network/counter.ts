@@ -1,24 +1,31 @@
 import { networks } from './networks';
 import { GSNConfig, GsnEvent, RelayProvider } from '@opengsn/provider';
-import { ethers, EventFilter, Signer } from 'ethers';
+import { ethers, EventFilter, Signer, ContractTransaction } from 'ethers';
 import CounterArtifact from '../abis/src/contracts/Counter.sol/Counter.json';
+import { Web3ProviderBaseInterface } from '@opengsn/common/dist/types/Aliases';
 
-declare let global: { network: any };
+class CounterContract implements ICounterContract {
+  theContract: ethers.Contract;
+  ethersProvider: ethers.providers.Provider;
+  blockDates: { [key: number]: Date };
+  gsnProvider: RelayProvider;
 
-const CounterContractHanlder = (address: string, signer: Signer, gsnProvider: RelayProvider) => {
-  const blockDates: { [key: number]: Date } = {};
-  const ethersProvider = signer.provider!;
-  const theContract = new ethers.Contract(address, CounterArtifact.abi, signer);
+  constructor(address: string, signer: Signer, gsnProvider: RelayProvider) {
+    this.theContract = new ethers.Contract(address, CounterArtifact.abi, signer);
+    this.ethersProvider = signer.provider!;
+    this.gsnProvider = gsnProvider;
+    this.blockDates = {};
+  }
 
-  const onIncrement = async (step: number): Promise<void> => {
-    return await theContract.increment(step);
-  };
+  async onIncrement(step: number): Promise<ContractTransaction> {
+    return await this.theContract.increment(step);
+  }
 
-  const onDecrement = async (step: number): Promise<void> => {
-    return await theContract.decrement(step);
-  };
+  async onDecrement(step: number): Promise<ContractTransaction> {
+    return await this.theContract.decrement(step);
+  }
 
-  const getEventInfo = async (e: ethers.Event): Promise<EventInfo> => {
+  async getEventInfo(e: ethers.Event): Promise<EventInfo> {
     if (!e.args) {
       return {
         previousHolder: 'notevent',
@@ -26,56 +33,63 @@ const CounterContractHanlder = (address: string, signer: Signer, gsnProvider: Re
       };
     }
     return {
-      date: await getBlockDate(e.blockNumber),
+      date: await this.getBlockDate(e.blockNumber),
       previousHolder: e.args.previousHolder,
       currentHolder: e.args.currentHolder,
     };
-  };
+  }
 
-  const listenToEvents = (onEvent: (e: EventInfo) => void, onProgress?: (e: GsnEvent) => void) => {
+  listenToEvents(onEvent: (e: EventInfo) => void, onProgress?: (e: GsnEvent) => void) {
     // @ts-ignore
     const listener = async (from, to, event) => {
-      const info = await getEventInfo(event);
+      const info = await this.getEventInfo(event);
       onEvent(info);
     };
 
-    theContract.on('Increment', listener);
-    theContract.on('Decrement', listener);
+    this.theContract.on('Increment', listener);
+    this.theContract.on('Decrement', listener);
     if (onProgress != undefined) {
-      gsnProvider.registerEventListener(onProgress);
+      this.gsnProvider.registerEventListener(onProgress);
     }
-  };
+  }
 
-  const stopListenToEvents = (onEvent?: EventFilter, onProgress = null) => {
-    theContract.off(onEvent as any, null as any);
-    gsnProvider.unregisterEventListener(onProgress as any);
-  };
+  stopListenToEvents(onEvent?: EventFilter, onProgress = null) {
+    this.theContract.off(onEvent as any, null as any);
+    this.gsnProvider.unregisterEventListener(onProgress as any);
+  }
 
-  const getBlockDate = async (blockNumber: number) => {
-    if (!blockDates[blockNumber]) {
-      blockDates[blockNumber] = new Date(
-        await ethersProvider.getBlock(blockNumber).then((b) => {
+  async getBlockDate(blockNumber: number) {
+    if (!this.blockDates[blockNumber]) {
+      this.blockDates[blockNumber] = new Date(
+        await this.ethersProvider.getBlock(blockNumber).then((b) => {
           return b.timestamp * 1000;
         }),
       );
     }
-    return blockDates[blockNumber];
-  };
+    return this.blockDates[blockNumber];
+  }
 
-  const getPastEvents = async (count = 5) => {
-    const currentBlock = (await ethersProvider.getBlockNumber()) - 1;
-    const lookupWindow = global.network?.pastEventsQueryMaxPageSize || (30 * 24 * 3600) / 12;
+  async getPastEvents(count = 5) {
+    const currentBlock = (await this.ethersProvider.getBlockNumber()) - 1;
+    const network = await this.ethersProvider.getNetwork();
+    const lookupWindow = networks[network.chainId].pastEventsQueryMaxPageSize || (30 * 24 * 3600) / 12;;
     const startBlock = Math.max(1, currentBlock - lookupWindow);
 
-    const logs = await theContract.queryFilter(theContract.filters.Increment(), startBlock);
-    const lastLogs = await Promise.all(logs.slice(-count).map((e) => getEventInfo(e)));
+    const logs = await this.theContract.queryFilter(
+      this.theContract.filters.Increment(),
+      startBlock,
+    );
+    const lastLogs = await Promise.all(logs.slice(-count).map((e) => this.getEventInfo(e)));
     return lastLogs;
-  };
+  }
 
-  const getSigner = () => theContract.signer.getAddress();
+  async getSigner(): Promise<string> {
+    const signer = await this.theContract.signer.getAddress();
+    return signer;
+  }
 
-  const getGsnStatus = async (): Promise<GsnStatusInfo> => {
-    const relayClient = gsnProvider.relayClient;
+  async getGsnStatus(): Promise<GsnStatusInfo> {
+    const relayClient = this.gsnProvider.relayClient;
     const ci = relayClient.dependencies.contractInteractor as any;
 
     return {
@@ -89,29 +103,16 @@ const CounterContractHanlder = (address: string, signer: Signer, gsnProvider: Re
           .refresh()
           .then(() => relayClient.dependencies.knownRelaysManager.allRelayers.length),
     };
-  };
+  }
 
-  const getCurrentValue = async () => {
-    const currentValue = await theContract.value();
+  async getCurrentValue() {
+    const currentValue = await this.theContract.value();
     const value = currentValue.toNumber();
     return value;
-  };
+  }
+}
 
-  return {
-    onIncrement,
-    onDecrement,
-    listenToEvents,
-    stopListenToEvents,
-    getPastEvents,
-    getSigner,
-    getGsnStatus,
-    getCurrentValue,
-    address: theContract.address,
-  };
-};
-
-const initCounter = async (ctx: any) => {
-  const { chainId, connection } = ctx;
+const initCounter = async (chainId: number, connection: Web3ProviderBaseInterface): Promise<CounterContract> => {
   const { paymasterAddress, counterAddress } = networks[chainId];
 
   const gsnConfig: Partial<GSNConfig> = {
@@ -131,7 +132,9 @@ const initCounter = async (ctx: any) => {
   const provider = new ethers.providers.Web3Provider(gsnProvider);
   const signer = provider.getSigner();
 
-  return CounterContractHanlder(counterAddress, signer, gsnProvider);
+  const counterContract = new CounterContract(counterAddress, signer, gsnProvider);
+
+  return counterContract;
 };
 
-export { initCounter };
+export { initCounter, CounterContract };
