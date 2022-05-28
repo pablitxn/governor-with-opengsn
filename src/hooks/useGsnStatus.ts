@@ -14,7 +14,7 @@ const useGsnStatus = () => {
   const updateStatus = useCallback(
     async (gsnStatus?: GsnStatusInfo) => {
       if (gsnStatus === undefined) {
-        gsnStatus = await ctx?.counterContract.getGsnStatus();
+        gsnStatus = await ctx?.governorContract.getGsnStatus();
       }
       const paymasterBalanceBN = (await gsnStatus?.getPaymasterBalance()) || '';
       const paymasterBalance = paymasterBalanceBN.toString();
@@ -28,8 +28,8 @@ const useGsnStatus = () => {
   );
 
   const getItinialState = useCallback(async () => {
-    ctx?.counterContract.listenToEvents((e) => updateStatus());
-    const gsnStatus = await ctx?.counterContract.getGsnStatus();
+    ctx?.governorContract.listenToEvents(() => updateStatus());
+    const gsnStatus = await ctx?.governorContract.getGsnStatus();
     console.log('== after getGsnStatus', gsnStatus);
     setState((prev) => ({
       ...prev,

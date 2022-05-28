@@ -1,28 +1,28 @@
 import { networks } from './networks';
 import { GSNConfig, GsnEvent, RelayProvider } from '@opengsn/provider';
 import { ethers, EventFilter, Signer, ContractTransaction } from 'ethers';
-import CounterArtifact from '../abis/src/contracts/Counter.sol/Counter.json';
+import GovernorInterface from '../abis/src/contracts/Governor.sol/MyGovernor.json';
 import { Web3ProviderBaseInterface } from '@opengsn/common/dist/types/Aliases';
 
-class CounterContract implements ICounterContract {
+class GovernorContract implements IGovernorContract {
   theContract: ethers.Contract;
   ethersProvider: ethers.providers.Provider;
   blockDates: { [key: number]: Date };
   gsnProvider: RelayProvider;
 
   constructor(address: string, signer: Signer, gsnProvider: RelayProvider) {
-    this.theContract = new ethers.Contract(address, CounterArtifact.abi, signer);
+    this.theContract = new ethers.Contract(address, GovernorInterface.abi, signer);
     this.ethersProvider = signer.provider!;
     this.gsnProvider = gsnProvider;
     this.blockDates = {};
   }
 
-  async onIncrement(step: number): Promise<ContractTransaction> {
-    return await this.theContract.increment(step);
+  async castVoteWithReason(proposalId: any, support: number, reason: string) {
+    return await this.theContract.castVoteWithReason(proposalId, support, reason);
   }
 
-  async onDecrement(step: number): Promise<ContractTransaction> {
-    return await this.theContract.decrement(step);
+  async propose(targets: string[], values: number[], calldatas: any, description: string) {
+    return await this.theContract.propose(targets, values, calldatas, description);
   }
 
   async getEventInfo(e: ethers.Event): Promise<EventInfo> {
@@ -46,8 +46,10 @@ class CounterContract implements ICounterContract {
       onEvent(info);
     };
 
-    this.theContract.on('Increment', listener);
-    this.theContract.on('Decrement', listener);
+    // this.theContract.on('ProposalCreated', listener);
+    // this.theContract.on('ProposalCanceled', listener);
+    // this.theContract.on('VoteCast', listener);
+    this.theContract.on('VoteCastWithParams', listener);
     if (onProgress != undefined) {
       this.gsnProvider.registerEventListener(onProgress);
     }
@@ -72,20 +74,19 @@ class CounterContract implements ICounterContract {
   async getPastEvents(count = 5) {
     const currentBlock = (await this.ethersProvider.getBlockNumber()) - 1;
     const network = await this.ethersProvider.getNetwork();
-    const lookupWindow = networks[network.chainId].pastEventsQueryMaxPageSize || (30 * 24 * 3600) / 12;;
+    const lookupWindow =
+      networks[network.chainId].pastEventsQueryMaxPageSize || (30 * 24 * 3600) / 12;
     const startBlock = Math.max(1, currentBlock - lookupWindow);
 
     const logs = await this.theContract.queryFilter(
-      this.theContract.filters.Increment(),
+      this.theContract.filters.VoteCast(),
+      // this.theContract.filters.ProposalCreated(),
+      // this.theContract.filters.ProposalCanceled(),
+      // this.theContract.filters.VoteCastWithParams(),
       startBlock,
     );
     const lastLogs = await Promise.all(logs.slice(-count).map((e) => this.getEventInfo(e)));
     return lastLogs;
-  }
-
-  async getSigner(): Promise<string> {
-    const signer = await this.theContract.signer.getAddress();
-    return signer;
   }
 
   async getGsnStatus(): Promise<GsnStatusInfo> {
@@ -104,15 +105,12 @@ class CounterContract implements ICounterContract {
           .then(() => relayClient.dependencies.knownRelaysManager.allRelayers.length),
     };
   }
-
-  async getCurrentValue() {
-    const currentValue = await this.theContract.value();
-    const value = currentValue.toNumber();
-    return value;
-  }
 }
 
-const initCounter = async (chainId: number, connection: Web3ProviderBaseInterface): Promise<CounterContract> => {
+const initGovernor = async (
+  chainId: number,
+  connection: Web3ProviderBaseInterface,
+): Promise<GovernorContract> => {
   const { paymasterAddress, counterAddress } = networks[chainId];
 
   const gsnConfig: Partial<GSNConfig> = {
@@ -132,9 +130,9 @@ const initCounter = async (chainId: number, connection: Web3ProviderBaseInterfac
   const provider = new ethers.providers.Web3Provider(gsnProvider);
   const signer = provider.getSigner();
 
-  const counterContract = new CounterContract(counterAddress, signer, gsnProvider);
+  const counterContract = new GovernorContract(counterAddress, signer, gsnProvider);
 
   return counterContract;
 };
 
-export { initCounter, CounterContract };
+export { initGovernor, GovernorContract };

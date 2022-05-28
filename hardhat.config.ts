@@ -11,34 +11,16 @@ import { HardhatUserConfig } from 'hardhat/config';
 envConfig({ path: '.env.local' });
 
 const rinkebyUrl = process.env.RINKEBY_URL || 'https://rinkeby.infura.io/v3/your-api-key';
-const accountPrivateKey =
-  process.env.ACCOUNT_PRIVATE_KEY ||
-  'e44db4d933460c2d0655a8834d987658cff294d74307029aa9f433dd1a3df270';
+const accountPrivateKey = process.env.PRIVATE_KEY_RINKEBY || 'your-private-key';
 const etherscanApiKey = process.env.ETHERSCAN_API_KEY || 'your-api-key';
 
 const config: HardhatUserConfig = {
   defaultNetwork: 'hardhat',
   solidity: {
-    compilers: [
-      {
-        version: '0.8.6',
-        settings: {
-          optimizer: { enabled: true, runs: 200 },
-        },
-      },
-      {
-        version: '0.8.7',
-        settings: {
-          optimizer: { enabled: true, runs: 200 },
-        },
-      },
-      {
-        version: '0.8.1',
-        settings: {
-          optimizer: { enabled: true, runs: 200 },
-        },
-      },
-    ],
+    version: '0.8.9',
+    settings: {
+      optimizer: { enabled: true, runs: 200 },
+    },
   },
   networks: {
     hardhat: {},
@@ -50,14 +32,6 @@ const config: HardhatUserConfig = {
       url: 'http://127.0.0.1:7545',
       chainId: 1337,
       accounts: [accountPrivateKey],
-    },
-  },
-  namedAccounts: {
-    deployer: { default: 0 },
-    metamask: '0xb95Dbde8F8BB5d807Da6cDB8Ba8A2C7106068B12',
-    //official addresses from https://docs.opengsn.org/networks
-    forwarder: {
-      4: '0x2E595b954337f11795384df653A39dcCC4785CdC',
     },
   },
   paths: {

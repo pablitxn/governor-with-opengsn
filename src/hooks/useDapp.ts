@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 import Web3Modal from 'web3modal';
-import { initCounter } from 'gas-station-network/counter';
+import { initGovernor } from 'gas-station-network/governor';
 
 const useDapp = () => {
   const [dappState, setDappState] = useState<IGlobalContext>(null);
@@ -30,7 +30,7 @@ const useDapp = () => {
           window.location.reload();
         });
 
-        const counterContract = await initCounter(chainId, connection);
+        const governorContract = await initGovernor(chainId, connection);
 
         setDappState({
           provider,
@@ -40,7 +40,7 @@ const useDapp = () => {
           connection,
           network,
           chainId,
-          counterContract,
+          governorContract,
         });
       } catch (err) {
         setError(err);

@@ -6,6 +6,6 @@ type IGlobalContext = {
   account: string;
   ethers?: any;
   chainId: number;
-  counterContract: ICounterContract;
+  governorContract: IGovernorContract;
 } | null;
 

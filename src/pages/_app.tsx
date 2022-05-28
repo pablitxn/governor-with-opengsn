@@ -7,8 +7,9 @@ import useDapp from 'hooks/useDapp';
 
 function MyApp({ Component, pageProps }: AppProps) {
   const { dappState } = useDapp();
+  // const { opengsn } = useGasStationNetwork();
 
-  if(!dappState) return <>loading...</>
+  if (!dappState) return <>loading...</>;
 
   return (
     <ChakraProvider>

@@ -15,7 +15,7 @@ try {
     name: 'local',
     paymasterAddress: '0xcf4Fff6DBDAeD3Db545b28cc8702020000B4DBf2',
     // @ts-ignore
-    counterAddress: require('../abis/src/contracts/Counter.sol/Counter.json').address,
+    counterAddress: require('../abis/src/contracts/Governor.sol/MyGovernor.json').address,
   };
 } catch (e) {
   console.warn('No local network:', (e as Error).message);
@@ -29,7 +29,7 @@ export const networks: { [chain: number]: NetworkType } = {
     pastEventsQueryMaxPageSize: 2e4,
     relayLookupWindowBlocks: 1e5,
     relayRegistrationLookupBlocks: 1e5,
-    counterAddress: '0x5BD6276e2453f63b160533618eFFaaF03aAd68D1',
+    counterAddress: '0x7B2D046f6D878B4Da5d9131Ff5B90a3962fBA6b1',
   },
   1337: localnetwork,
 };
